@@ -1,2 +1,2 @@
 # 43030-dev-tools
-This was changed in the feature branch!
+This line combines both branches after resolving the conflict
