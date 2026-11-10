@@ -1,0 +1,41 @@
+name: Portfolio Auto Update
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update_html_and_readme:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Detect who pushed and update index.html
+      - name: Update index.html
+        run: |
+          echo "Pushed by: ${{ github.actor }}"
+          if [ "${{ github.actor }}" = "Phil0719" ]; then
+            sed -i '/<\/body>/i <p>Updated by Phil0719 (Team Leader) on '"$(date)"'</p>' index.html
+          else
+            sed -i '/<\/body>/i <p>Updated by '"${{ github.actor }}"' on '"$(date)"'</p>' index.html
+          fi
+
+      # Step 3: Add a log entry to README.md
+      - name: Update README
+        run: |
+          echo "### Updated by ${{ github.actor }} on $(date '+%Y-%m-%d %H:%M:%S') [Commit: $(git rev-parse --short HEAD)]" >> README.md
+
+      # Step 4: Commit and push the changes
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Auto update: index and README for ${{ github.actor }}" || echo "No changes to commit"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
